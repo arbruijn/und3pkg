@@ -10,21 +10,21 @@ def readpkg(f):
 	sig = f.read(4)
 	if sig != b'GKPO':
 		raise Exception('invalid pkg header')
-	numfiles = struct.unpack('<i', f.read(4))[0]
+	numfiles = struct.unpack('<I', f.read(4))[0]
 	while True:
 		dlenbuf = f.read(4)
 		if not dlenbuf:
 			break
-		dirlen = struct.unpack('<i', dlenbuf)[0]
+		dirlen = struct.unpack('<I', dlenbuf)[0]
 		dir = f.read(dirlen)
 		dir = dir[:dir.index(b'\x00')]
 		dir = dir.replace(b'\\', b'/')
 		
-		namelen = struct.unpack('<i', f.read(4))[0]
+		namelen = struct.unpack('<I', f.read(4))[0]
 		name = f.read(namelen)
 		name = name[:name.index(b'\x00')]
 		
-		(size, unknown1, unknown2) = struct.unpack('<iii', f.read(12))
+		(size, unknown1, unknown2) = struct.unpack('<III', f.read(12))
 		cur = f.tell()
 		yield (dir + name, size, cur)
 		f.seek(cur + size)
