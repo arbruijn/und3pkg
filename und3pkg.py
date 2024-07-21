@@ -24,9 +24,10 @@ def readpkg(f):
 		name = f.read(namelen)
 		name = name[:name.index(b'\x00')]
 		
-		(size, unknown1, unknown2) = struct.unpack('<III', f.read(12))
+		(size, time) = struct.unpack('<IQ', f.read(12))
+		time = (time / 10000000) - 11644473600 # filetime to time_t
 		cur = f.tell()
-		yield (dir + name, size, cur)
+		yield (dir + name, size, cur, time)
 		f.seek(cur + size)
 
 def unpkg(fn, pat, opts):
@@ -36,7 +37,7 @@ def unpkg(fn, pat, opts):
 	dir = opts.get('d')
 	list = opts.get('l')
 	with open(fn, "rb") as f:
-		for (bname, size, ofs) in readpkg(f):
+		for (bname, size, ofs, time) in readpkg(f):
 			name = bname.decode('cp437').lower()
 			if rpat and not rpat.match(name):
 				continue
@@ -51,6 +52,9 @@ def unpkg(fn, pat, opts):
 				os.makedirs(dir, exist_ok = True)
 			with open(outname, "wb") as fo:
 				fo.write(f.read(size))
+			if time:
+				stat = os.stat(outname)
+				os.utime(outname, (stat.st_atime, time))
 
 if __name__ == '__main__':
 	try:
