@@ -46,7 +46,9 @@ def unpkg(fn, pat, opts):
 			f.seek(ofs, 0)
 			outname = os.path.join(dir, name) if dir else name
 			print(outname)
-			os.makedirs(os.path.dirname(outname), exist_ok = True)
+			dir = os.path.dirname(outname)
+			if dir:
+				os.makedirs(dir, exist_ok = True)
 			with open(outname, "wb") as fo:
 				fo.write(f.read(size))
 
